@@ -1,0 +1,23 @@
+{
+  "name": "rainbowlog",
+  "version": "1.0.0",
+  "description": "Log with color.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node example.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/linkeo/rainbowlog.git"
+  },
+  "keywords": [
+    "colorful",
+    "output"
+  ],
+  "author": "linkeo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/linkeo/rainbowlog/issues"
+  },
+  "homepage": "https://github.com/linkeo/rainbowlog#readme"
+}
