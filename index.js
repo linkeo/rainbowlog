@@ -1,7 +1,7 @@
 var colorout = exports.colorout = require('./colorout.js');
 var util = require('util');
 
-exports.DebugMode = true;
+exports.prod = false; // Under prod mode, doesn't print 'log.trace' and 'log.debug'
 
 const Colors = exports.Colors = {
 	Default		: -1,
@@ -120,7 +120,7 @@ function Logger (tag, lvl, clr, bg) {
 }
 
 Logger.prototype.log = function () {
-	if (exports.DebugMode || (this.lvl > Levels.Debug)) {
+	if (!exports.prod || (this.lvl > Levels.Debug)) {
 		if (this.bg!=null)
 			echoWithBgTag(
 				textColor(this.clr),

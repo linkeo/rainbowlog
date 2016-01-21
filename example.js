@@ -1,6 +1,6 @@
 var log = require('./index.js');
 
-// log.DebugMode = false;
+// log.prod = true;
 log.black('this is a black message.');
 log.red('tomato ketchup');
 log.green('Test all green');
