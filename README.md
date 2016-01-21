@@ -51,8 +51,8 @@ Prepend timestamp and color the text for output.
 
 Prepend timestamp and a level tag, also color the output text.
 
-- `trace(...args)`
-- `debug(...args)`
+- `trace(...args)`, not print in prod mode (`prod=true`)
+- `debug(...args)`, not print in prod mode (`prod=true`)
 - `info(...args)`
 - `warn(...args)`
 - `error(...args)`
