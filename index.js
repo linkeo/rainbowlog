@@ -78,18 +78,19 @@ function echoc (clr, txt) {
 	console.log(output)
 }
 
-function echo (clr, tag, txt) {
+function echo (clr, tag, isError, txt) {
 	const timestamp = current()
 	const prefix = tag?'['+tag+'] ':'';
 	var output = timestamp + colorout.TextColor(clr, prefix+txt)
 	if (clr == -1) {
 		output = timestamp + prefix+txt
 	}
-	console.log(output)
+	if (isError) console.log(output);
+	else console.error(output);
 }
 
 
-function echoWithBgTag (clr, bg, tag, txt) {
+function echoWithBgTag (clr, bg, tag, isError, txt) {
 	const timestamp = current()
 	const prefix = tag?colorout.TextColorWithBackground(
 		colorout.Colors.white, bg, 
@@ -98,7 +99,8 @@ function echoWithBgTag (clr, bg, tag, txt) {
 	if (clr == -1) {
 		output = timestamp + prefix+txt
 	}
-	console.log(output)
+	if (isError) console.log(output);
+	else console.error(output);
 }
 
 const Levels = exports.Levels = {
@@ -126,11 +128,13 @@ Logger.prototype.log = function () {
 				textColor(this.clr),
 				backgroundColor(this.bg),
 				this.tag, 
+				this.lvl > Levels.Info,
 				util.format.apply(this, arguments));
 		else 
 			echo(
 				textColor(this.clr), 
 				this.tag, 
+				this.lvl > Levels.Info,
 				util.format.apply(this, arguments));
 	}
 }

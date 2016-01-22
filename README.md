@@ -29,16 +29,28 @@ log.debug('debugging output %s', 'haha'); // 2016-01-21 03:54:56.505  [Debug]  d
 
 ## Logging Functions
 
-Logging functions receive the same arguments as `console.log(...args)`;
+Logging functions can be used by the same way as Node.js's `console.log(...args)`:
 
-- Formatted Output: `log.log('Cost: $%d', 19.4)` prints `Cost: $19.4` after timestamp;
-- Not Formatted Output: `log.log('Cost:', '$', 19.4)` prints `Cost: $ 19.4` after timestamp (If arguments not match formatted output, just join all arguments with space ` `).
+> Prints to stdout with newline. Multiple arguments can be passed, with the first used as the primary message and all additional used as substitution values similar to printf() (the arguments are all passed to util.format()).
+> 
+> ```
+> var count = 5;
+> console.log('count: %d', count);
+>   // Prints: count: 5, to stdout
+> console.log('count: ', count);
+>   // Prints: count: 5, to stdout
+> ```
+> 
+> If formatting elements (e.g. %d) are not found in the first string then util.inspect() is called on each argument and the resulting string values are concatenated. See util.format() for more information.
+> 
+> *Referenced from [Node.js's document.](https://nodejs.org/api/console.html#console_console_log_data)*
 
 ### Simple output
 
 Prepend timestamp only.
 
-- `log(...args)`, equivalent to `standard(...args)`
+- `log(...args)`
+- `standard(...args)`, equivalent to `log(...args)`
 
 ### Colored Output
 
@@ -57,8 +69,8 @@ Prepend timestamp and color the text for output.
 
 Prepend timestamp and a level tag, also color the output text.
 
-- `trace(...args)`, not print in prod mode (`prod=true`)
-- `debug(...args)`, not print in prod mode (`prod=true`)
+- `trace(...args)`, doesn't print in prod mode (`prod=true`)
+- `debug(...args)`, doesn't print in prod mode (`prod=true`)
 - `info(...args)`
 - `warn(...args)`
 - `error(...args)`
