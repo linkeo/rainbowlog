@@ -7,7 +7,7 @@ Log with color.
 #### Progress
 
 - [x] Format Output, Multi-levels.
-- [ ] Print `error(...args)`, `fatal(...args)` to stderr.
+- [x] Print `error(...args)`, `fatal(...args)` to stderr.
 - [ ] Write to log file, split by day(split at 00:00).
 
 ## Installation

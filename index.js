@@ -128,13 +128,13 @@ Logger.prototype.log = function () {
 				textColor(this.clr),
 				backgroundColor(this.bg),
 				this.tag, 
-				this.lvl > Levels.Info,
+				this.lvl > Levels.Warn,
 				util.format.apply(this, arguments));
 		else 
 			echo(
 				textColor(this.clr), 
 				this.tag, 
-				this.lvl > Levels.Info,
+				this.lvl > Levels.Warn,
 				util.format.apply(this, arguments));
 	}
 }
