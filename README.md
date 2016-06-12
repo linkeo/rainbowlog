@@ -1,5 +1,7 @@
 # RainbowLog
 
+[![Build Status](https://travis-ci.org/linkeo/rainbowlog.svg?branch=dev)](https://travis-ci.org/linkeo/rainbowlog)
+
 Log with color.
 
 > Only work in Unix-based systems.
@@ -32,7 +34,7 @@ log.debug('debugging output %s', 'haha'); // 2016-01-21 03:54:56.505  [Debug]  d
 Logging functions can be used by the same way as Node.js's `console.log(...args)`:
 
 > Prints to stdout with newline. Multiple arguments can be passed, with the first used as the primary message and all additional used as substitution values similar to printf() (the arguments are all passed to util.format()).
-> 
+>
 > ```
 > var count = 5;
 > console.log('count: %d', count);
@@ -40,9 +42,9 @@ Logging functions can be used by the same way as Node.js's `console.log(...args)
 > console.log('count: ', count);
 >   // Prints: count: 5, to stdout
 > ```
-> 
+>
 > If formatting elements (e.g. %d) are not found in the first string then util.inspect() is called on each argument and the resulting string values are concatenated. See util.format() for more information.
-> 
+>
 > *Referenced from [Node.js's document.](https://nodejs.org/api/console.html#console_console_log_data)*
 
 ### Simple output
