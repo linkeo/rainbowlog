@@ -1,5 +1,6 @@
 'use strict';
 
+const os = require('os');
 const fs = require('fs-extra');
 const path = require('path');
 const moment = require('moment');
@@ -8,35 +9,44 @@ const tzOffset = (new Date()).getTimezoneOffset() * 60000;
 
 const chunkTimeFormat = 'YYYY-MM-DD-HH';
 const chunkTimeOptionPattern = /^(\d+) ?(d|day|days|h|hour|hours)$/;
-const chunkSizeOptionPattern = /^([\d\.]+) ?(b|k|kb|m|mb|g|gb)?$/;
+const chunkSizeOptionPattern = /^([\d\.]+) ?(b|byte|bytes|k|kb|m|mb|g|gb)?$/;
 
-const defaultConfig = {
+const defaultOptions = {
   type: 'console',
-  outputLevels: 'all',
+  levels: 'all',
+  chunkTime: null,
+  chunkSize: 64 * 1024 * 1024,
+  filename: 'output',
+  filepath: path.join(process.cwd(), 'logs'),
 };
 
 class Appender {
-  constructor(config) {
-    if (config == null) {
-      config = defaultConfig;
-    }
+  constructor(options) {
+    const config = Object.assign({}, defaultOptions);
+    Object.seal(config);
+    Object.assign(config, options);
+    Object.defineProperties(this, {
+      levels: {writable: true},
+      type: {writable: true, enumerable: true},
+      chunkRule: {writable: true},
+      outputStream: {writable: true},
+    });
     this.levels = config.levels || 'all';
     switch (config.type) {
       case 'console':
-        this.outputType = 'console';
+        this.type = 'console';
         this.outputStream = process.stdout;
         break;
       case 'file':
-        this.outputType = 'file';
+        this.type = 'file';
         this.chunkRule = {
           time: parseChunkTimeOption(config.chunkTime),
-          size: parseChunkSizeOption(config.chunkSize) || 64 * 1024 * 1024,
-          name: config.filename || 'output',
-          path: config.filepath || path.join(process.cwd(), 'logs'),
+          size: parseChunkSizeOption(config.chunkSize),
+          name: config.filename,
+          path: config.filepath,
           bufSize: 0,
         };
         this.chunkRule.curr = currentTimeSection(this.chunkRule);
-        this.outputStream = fs.createWriteStream(getChunkFilename(this.chunkRule), {flags: 'a'});
         break;
       default:
         throw new Error(`unknown appender type "${config.type}"`);
@@ -44,11 +54,15 @@ class Appender {
   }
   append(level, output) {
     const amount = Buffer.byteLength(output);
+    if (this.outputStream == null) {
+      this.outputStream = fs.createWriteStream(getChunkFilename(this.chunkRule), {flags: 'a'});
+    }
     if (this.levels === 'all' || this.levels.includes(level)) {
-      switch (this.outputType) {
+      switch (this.type) {
         case 'console':
           this.outputStream.cork();
           this.outputStream.write(output);
+          this.outputStream.write(os.EOL);
           this.outputStream.uncork();
           break;
         case 'file':
@@ -67,6 +81,7 @@ class Appender {
           }
           this.outputStream.cork();
           this.outputStream.write(output);
+          this.outputStream.write(os.EOL);
           this.outputStream.uncork();
           this.chunkRule.bufSize += amount;
           break;
@@ -112,6 +127,8 @@ function parseChunkSizeOption(option) {
     case 'gb':
       return value * 1024 * 1024 * 1024;
     case 'b':
+    case 'byte':
+    case 'bytes':
     case '':
     case null:
     case undefined:
@@ -189,5 +206,8 @@ function getChunkFilename(rule) {
 }
 
 Appender.Console = new Appender(defaultConfig);
+Appender.DefaultFileAppender = new Appender({type: 'file'});
+Appender.DailyFileAppender = new Appender({type: 'file', name: 'daily', chunkTime: '1d', chunkSize: 0});
+Appender.Prod = new Appender({type: 'file', levels: ['Info', 'Warn', 'Error', 'Fatal'], name: 'prod', chunkTime: '1d'});
 
 module.exports = Appender;

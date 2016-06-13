@@ -1,16 +1,17 @@
-# RainbowLog
+# RainbowLog v2
 
 [![Build Status](https://travis-ci.org/linkeo/rainbowlog.svg?branch=dev)](https://travis-ci.org/linkeo/rainbowlog)
 
-Log with color.
+Simple Logging Package for Node.js.
 
-> Only work in Unix-based systems.
+- [x] simple to use.
+- [x] print with color in unix terminals.
+- [x] customizable levels.
+- [x] customizable timestamp.
+- [x] can persist to file.
+- [x] support seperating file by size or time (in hours or days).
 
-#### Progress
-
-- [x] Format Output, Multi-levels.
-- [x] Print `error(...args)`, `fatal(...args)` to stderr.
-- [ ] Write to log file, split by day(split at 00:00).
+> **Notice**: Colorfying only works in Unix-based systems.
 
 ## Installation
 
@@ -20,88 +21,158 @@ npm install --save rainbowlog
 
 ## Usage
 
-```js
-var log = require('rainbowlog');
+### 1. Use Default Logger
 
-log.prod = true; // default to false
-
-log.log('standard output with timestamp'); // 2016-01-21 03:54:56.503 standard output with timestamp
-log.debug('debugging output %s', 'haha'); // 2016-01-21 03:54:56.505  [Debug]  debugging output haha
-```
-
-## Logging Functions
-
-Logging functions can be used by the same way as Node.js's `console.log(...args)`:
-
-> Prints to stdout with newline. Multiple arguments can be passed, with the first used as the primary message and all additional used as substitution values similar to printf() (the arguments are all passed to util.format()).
->
-> ```
-> var count = 5;
-> console.log('count: %d', count);
->   // Prints: count: 5, to stdout
-> console.log('count: ', count);
->   // Prints: count: 5, to stdout
-> ```
->
-> If formatting elements (e.g. %d) are not found in the first string then util.inspect() is called on each argument and the resulting string values are concatenated. See util.format() for more information.
->
-> *Referenced from [Node.js's document.](https://nodejs.org/api/console.html#console_console_log_data)*
-
-### Simple output
-
-Prepend timestamp only.
-
-- `log(...args)`
-- `standard(...args)`, equivalent to `log(...args)`
-
-### Colored Output
-
-Prepend timestamp and color the text for output.
-
-- `black(...args)`
-- `red(...args)`
-- `green(...args)`
-- `yellow(...args)`
-- `blue(...args)`
-- `magenta(...args)`
-- `cyan(...args)`
-- `white(...args)`
-
-### Multi-level Output
-
-Prepend timestamp and a level tag, also color the output text.
-
-- `trace(...args)`, doesn't print in prod mode (`prod=true`)
-- `debug(...args)`, doesn't print in prod mode (`prod=true`)
-- `info(...args)`
-- `warn(...args)`
-- `error(...args)`
-- `fatal(...args)`
-
-## Example
+We provide a default logger for common usage.
 
 ```js
-// test.js
-var log = require('./index.js');
+const log = require('rainbowlog');
 
-// log.DebugMode = false;
-log.black('this is a black message.');
-log.red('tomato ketchup');
-log.green('Test all green');
-log.yellow('honey~~~');
-log.blue('https://github.com');
-log.magenta('this is a magenta message.');
-log.cyan('Water is cold.');
-log.white('White message...');
-log.standard('Standard ouput');
-log.fatal('Database is not reachable', {url: "mongodb://localhost/test"});
-log.error('Duplicate key', {key: "name", table: "user"});
-log.warn('Your phonenumber %s is not a valid chinese phone number.', '9135910341034');
-log.info('User %s(#%d) logged in.', 'leocm', 151);
-log.debug('Got %d items from list', 15); // will not display if DebugMode==false
-log.trace('Visit %s %s', 'POST', '/user/register'); // will not display if DebugMode==false
+log.trace(...);
+log.debug(...);
+log.info(...);
+log.warn(...);
+log.error(...);
+log.fatal(...);
 ```
 
-Prints:
+These functions take the same arguments as [`console.log` in Node.js](https://nodejs.org/api/console.html#console_console_log_data).
 
-![screenshot.png](screenshot.png)
+> The default logger is configured to be console-only in dev environment. And in prod environment, it prints to both console and files (log files are located in 'logs' directory from current working directory ([`process.cwd()`](https://nodejs.org/api/process.html#process_process_cwd)))
+>
+> We distinguish environments via [`isprod`](https://github.com/linkeo/isprod) package. Basically you can use environment `NODE_ENV=prod` or pass `--prod` to the program to announce a prod environment.
+
+### 2. Conceptions
+
+We have these objects for different aims:
+
+1. **logger**: to be used in use program, call functions to log messages.
+2. **appender**: to append(write) an well formatted message to output, such as console, files, etc.
+
+Other conceptions:
+
+1.  **chunk**: we use 'chunk' to stand for separated file partitions.
+
+## Document
+
+### class: Logger
+
+Loggers are used to log messages for users.
+
+you can call level-log methods by level names.
+
+> new Logger(options)
+
+options:
+
+- **format** *object* : 
+
+  - **line** *string* : Customize output message, default as `${time} ${tag} ${output}`.
+    - `${time}` : replaced by timestamp.
+    - `${tag}` : replaced by a styled tag indicating log level.
+    - `${output}` : **required**. replaced by user message.
+
+  - **timeFormat** *string* : Customize output message, default as `YYYY-MM-DD HH:mm:ss.SSS` , directly passed to [moment.js](http://momentjs.com/docs/#/displaying/format/)
+  - **tagStyle** *string* : Configure tag style, available values are `background` (default) , `bracket` , `hidden` , `plain` .
+  - **tagLength** *number* : To be used as tag, level name will truncated by this option. default to `5`.
+
+
+- **levels** *object* : Customize log levels, this is a key-value object, keys stand for levels and values stand for color of corresponding level.
+
+  >   Available colors are:
+  >
+  >   -   black, red, green, yellow, blue, magenta, cyan, white
+  >   -   blackBright, redBright, greenBright, yellowBright, blueBright, magentaBright, cyanBright, whiteBright
+  >
+  >   Default levels:
+  >
+  >   -   trace - green
+  >   -   debug - cyan
+  >   -   info - blue
+  >   -   warn - yellow
+  >   -   error - red
+  >   -   fatal - magenta
+
+- **appenders** *array* : appenders can be instances of Appender or appender options objects. instances are used directly, while options will used to construct new Appender instances. See 'Appender'.
+
+  >   **Notice**: If you want to share same output file in different loggers, you should pass instance in this options.
+
+
+
+> logger.log(level: string, …message)
+
+In principle, This method should **not** be called by users.
+
+
+
+#### Constants
+
+>   Logger.Console
+
+Configured with default levels, only log to console.
+
+
+
+>   Logger.Colors
+
+Configured with color names as levels, only log to console.
+
+
+
+>    Logger.Prod
+
+Configured with default levels, log to console and file, file appender are configured with default path, named as 'prod', seperating by default size limit and 1-day time limit.
+
+
+
+### class: Appender
+
+Appenders are used to append messages to output.
+
+>   new Appender(options)
+
+options: 
+
+-   **type** *string* : Available values: 'console', 'file'.
+
+    >   if type is set to console, appender will append messages to stdout. and need no more options below.
+
+-   **levels** *array | 'all'* : Pass an array of level names to tell appender to allow these levels **only** to be appended to output. Optionally, you can pass string 'all' to indicate accept all levels. Default as 'all'.
+
+-   **chunkTime** *number | string* : **Only useful for type 'file'.** Set a period for seperating output file into chunks, available time unit are 'days' and 'hours'. If you pass an number, it will treat as seconds. Default as null.
+
+    >   For example, you can pass '1 hour', '4 hours', '9h', '1d', '7days' or 24 * 3600 * 1000.
+
+-   **chunkSize** *number | string* : **Only useful for type 'file'.** Set a size limit to file chunks. available size unit are 'b', 'kb', 'mb', 'gb'. Numbers are treat as bytes. Default as 64mb.
+
+    >   For example, you can pass '64m', '16mb', '8 kb', '1024000 bytes' or 1024000.
+
+-   **filename** *string* : **Only useful for type 'file'.** Set a prefix of log files (Final filename will contain chunk message such as time or chunk number). Default as 'output'.
+
+-   **filepath** *string* : **Only useful for type 'file'.** Set the directory to save log files. Default as 'logs' directory to 'cwd'.
+
+
+
+#### Constants:
+
+>   Appender.Console
+
+The Console Appender.
+
+
+
+>   Appender.DefaultFileAppender
+
+File appender configured with default options. (seperate by size limit only).
+
+
+
+>   Appender.DailyFileAppender
+
+File appender configured to seperate by 1-day time limit only.
+
+
+
+>   Appender.Prod
+
+File appender configured for Logger.Prod.
