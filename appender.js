@@ -205,9 +205,9 @@ function getChunkFilename(rule) {
   return filename;
 }
 
-Appender.Console = new Appender(defaultConfig);
+Appender.Console = new Appender(defaultOptions);
 Appender.DefaultFileAppender = new Appender({type: 'file'});
-Appender.DailyFileAppender = new Appender({type: 'file', name: 'daily', chunkTime: '1d', chunkSize: 0});
-Appender.Prod = new Appender({type: 'file', levels: ['Info', 'Warn', 'Error', 'Fatal'], name: 'prod', chunkTime: '1d'});
+Appender.DailyFileAppender = new Appender({type: 'file', filename: 'daily', chunkTime: '1d', chunkSize: 0});
+Appender.Prod = new Appender({type: 'file', levels: ['Info', 'Warn', 'Error', 'Fatal'], filename: 'prod', chunkTime: '1d'});
 
 module.exports = Appender;
