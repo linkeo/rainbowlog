@@ -1,6 +1,6 @@
 {
   "name": "rainbowlog",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Log with color.",
   "main": "index.js",
   "scripts": {

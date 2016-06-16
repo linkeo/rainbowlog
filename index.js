@@ -87,7 +87,7 @@ function echo(clr, tag, isError, txt) {
   if (clr === -1) {
     output = `${timestamp} ${prefix}${txt}`;
   }
-  if (isError) {
+  if (!isError) {
     console.log(output);
   } else {
     console.error(output);
@@ -102,7 +102,7 @@ function echoWithBgTag(clr, bg, tag, isError, txt) {
   if (clr === -1) {
     output = `${timestamp} ${prefix}${txt}`;
   }
-  if (isError) {
+  if (!isError) {
     console.log(output);
   } else {
     console.error(output);
