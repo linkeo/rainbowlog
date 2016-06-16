@@ -1,7 +1,7 @@
 'use strict';
 
 const should = require('chai').should();
-const Appender = require('../appender');
+const Appender = require('../lib/appender');
 
 describe('Appender', () => {
   it('should have enumerable property "type" to indicate what appender type it is.', () => {
