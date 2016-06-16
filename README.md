@@ -13,11 +13,15 @@ Simple Logging Package for Node.js.
 
 > **Notice**: Colorfying only works in Unix-based systems.
 
+
+
 ## Installation
 
 ```sh
 npm install --save rainbowlog
 ```
+
+
 
 ## Usage
 
@@ -28,12 +32,12 @@ We provide a default logger for common usage.
 ```js
 const log = require('rainbowlog');
 
-log.trace(...);
-log.debug(...);
-log.info(...);
-log.warn(...);
-log.error(...);
-log.fatal(...);
+log.trace('hello log');
+log.debug('hello', 'log');
+log.info('%s %s', 'hello', 'log');
+log.warn();
+log.error(); // print to process.stderr
+log.fatal(); // print to process.stderr
 ```
 
 These functions take the same arguments as [`console.log` in Node.js](https://nodejs.org/api/console.html#console_console_log_data).
@@ -42,7 +46,83 @@ These functions take the same arguments as [`console.log` in Node.js](https://no
 >
 > We distinguish environments via [`isprod`](https://github.com/linkeo/isprod) package. Basically you can use environment `NODE_ENV=prod` or pass `--prod` to the program to announce a prod environment.
 
-### 2. Conceptions
+
+
+### 2. Use Provided Logger
+
+We have provided a few loggers for common usage.
+
+Let's take a quick look:
+
+```js
+const {Logger} = require('rainbowlog');
+
+const consl = Logger.Console // log all to process.stdout
+consl.error(); // print to process.stdout
+
+const logclr = Logger.Colors // levels are color names. only print messages.
+logclr.red(); // print red messages.
+```
+
+>   You can provide some default logger if you think it is common. Welcome to talk about it in issue.
+
+
+
+### 3. Customize Loggers
+
+You can define loggers to fit your proposes.
+
+```js
+const {Logger, Appender} = require('rainbowlog');
+const path = require('path');
+
+const log = new Logger({
+  format: {
+    taglength: 3, // display 'network' as 'net'
+  },
+  levels: { // customize levels here
+    network: 'cyan',
+    logic: 'blue',
+    render: 'green',
+    warn: 'warn',
+    error: 'red',
+  },
+  appenders: [
+    Appender.Console, // print all message to stdout
+    {                 // save network records to files in cwd/network-logs
+      type: 'file',
+      filepath: path.join(process.cwd(), 'network-logs'),
+      filename: 'network',
+      levels: ['network']
+    },
+    {                 // save message expect errors to files in cwd/logs
+      type: 'file',
+      filepath: path.join(process.cwd(), 'logs'),
+      filename: 'output',
+      levels: ['logic', 'render']
+    },
+    {                 // save errors to files in cwd/error-logs
+      type: 'file',
+      filepath: path.join(process.cwd(), 'error-logs'),
+      filename: 'errors',
+      levels: ['warn', 'error']
+    },
+  ]
+});
+
+// record network in express.js
+app.use((req, res, next) => {
+  log.network(req.ip, req.url);
+});
+```
+
+>   **Notice**: Appender.Prod, Append.Stdout, Append.Stderr are defined with levels, should not be used if your want to customize levels.
+>
+>   Instead, you should pass streams to appender.
+
+
+
+### Conceptions
 
 We have these objects for different aims:
 
@@ -51,7 +131,9 @@ We have these objects for different aims:
 
 Other conceptions:
 
-1.  **chunk**: we use 'chunk' to stand for separated file partitions.
+1.  **chunk**: we use 'chunk' to stand for separated file partitions/rotating.
+
+
 
 ## Document
 
@@ -107,21 +189,24 @@ In principle, This method should **not** be called by users.
 
 #### Constants
 
->   Logger.Console
+-   Logger.Console
 
-Configured with default levels, only log to console.
-
-
-
->   Logger.Colors
-
-Configured with color names as levels, only log to console.
+    *Configured with default levels, only log to console.*
 
 
+-   Logger.Colors
 
->    Logger.Prod
+    *Configured with color names as levels, only log to console.*
 
-Configured with default levels, log to console and file, file appender are configured with default path, named as 'prod', seperating by default size limit and 1-day time limit.
+
+-   Logger.Standard
+
+    *Configured with default levels, log levels lower than 'error' to stdout, error levels ('error' and 'fatal') to stderr.*
+
+
+-   Logger.Prod
+
+    *Configured with default levels, log to console and file, file appender are configured with default path, named as 'prod', seperating by default size limit and 1-day time limit.*
 
 
 
@@ -133,11 +218,23 @@ Appenders are used to append messages to output.
 
 options: 
 
--   **type** *string* : Available values: 'console', 'file'.
-
-    >   if type is set to console, appender will append messages to stdout. and need no more options below.
-
 -   **levels** *array | 'all'* : Pass an array of level names to tell appender to allow these levels **only** to be appended to output. Optionally, you can pass string 'all' to indicate accept all levels. Default as 'all'.
+
+
+-   **stream** *writable stream* : You can provide an writable stream to be appended. If stream is provided, options below will be ignored. (means only stream and levels will be considered)
+
+    >   *"If stream is provided, other options will be ignored."*
+    >
+    >   It means, user provided streams are not supported with chunk (rotating).
+
+
+-   **type** *string* : Available values: 'console', 'file'. Should omit it while stream is provided.
+
+      >   if type is set to console, appender will append messages to stdout. and need no more options below.
+
+-   **filename** *string* : **Only useful for type 'file'.** Set a prefix of log files (Final filename will contain chunk message such as time or chunk number). Default as 'output'.
+
+-   **filepath** *string* : **Only useful for type 'file'.** Set the directory to save log files. Default as 'logs' directory to 'cwd'.
 
 -   **chunkTime** *number | string* : **Only useful for type 'file'.** Set a period for seperating output file into chunks, available time unit are 'days' and 'hours'. If you pass an number, it will treat as seconds. Default as null.
 
@@ -147,32 +244,25 @@ options:
 
     >   For example, you can pass '64m', '16mb', '8 kb', '1024000 bytes' or 1024000.
 
--   **filename** *string* : **Only useful for type 'file'.** Set a prefix of log files (Final filename will contain chunk message such as time or chunk number). Default as 'output'.
-
--   **filepath** *string* : **Only useful for type 'file'.** Set the directory to save log files. Default as 'logs' directory to 'cwd'.
-
 
 
 #### Constants:
 
->   Appender.Console
+-   Appender.Console
 
-The Console Appender.
-
-
-
->   Appender.DefaultFileAppender
-
-File appender configured with default options. (seperate by size limit only).
+    *The Console Appender.*
 
 
+-   Appender.DefaultFileAppender
 
->   Appender.DailyFileAppender
-
-File appender configured to seperate by 1-day time limit only.
-
+    *File appender configured with default options. (seperate by size limit only).*
 
 
->   Appender.Prod
+-   Appender.DailyFileAppender
 
-File appender configured for Logger.Prod.
+    *File appender configured to seperate by 1-day time limit only.*
+
+
+-   Appender.Prod
+
+    *File appender configured for Logger.*Prod.
