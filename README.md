@@ -1,6 +1,6 @@
 # RainbowLog v2
 
-[![Build Status](https://travis-ci.org/linkeo/rainbowlog.svg?branch=dev)](https://travis-ci.org/linkeo/rainbowlog)
+[![Build Status](https://travis-ci.org/linkeo/rainbowlog.svg?branch=master)](https://travis-ci.org/linkeo/rainbowlog)
 
 Simple Logging Package for Node.js.
 
@@ -147,7 +147,7 @@ you can call level-log methods by level names.
 
 options:
 
-- **format** *object* : 
+- **format** *object* :
 
   - **line** *string* : Customize output message, default as `${time} ${tag} ${output}`.
     - `${time}` : replaced by timestamp.
@@ -216,7 +216,7 @@ Appenders are used to append messages to output.
 
 >   new Appender(options)
 
-options: 
+options:
 
 -   **levels** *array | 'all'* : Pass an array of level names to tell appender to allow these levels **only** to be appended to output. Optionally, you can pass string 'all' to indicate accept all levels. Default as 'all'.
 
