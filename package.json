@@ -24,6 +24,7 @@
     "cli-color": "^1.1.0",
     "fs-extra": "^0.30.0",
     "isprod": "^1.1.0",
+    "lodash": "^4.13.1",
     "moment": "^2.13.0"
   },
   "devDependencies": {
