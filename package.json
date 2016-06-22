@@ -4,7 +4,7 @@
   "description": "Log with color.",
   "main": "index.js",
   "scripts": {
-    "test": "node example.js"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -22,5 +22,9 @@
   "homepage": "https://github.com/linkeo/rainbowlog#readme",
   "dependencies": {
     "moment": "^2.13.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3"
   }
 }
